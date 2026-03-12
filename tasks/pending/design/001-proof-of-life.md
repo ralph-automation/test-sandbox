@@ -1,7 +1,7 @@
 Create a file called `proof-of-life-design.txt` in the project root directory.
 
 The file should contain exactly:
-- Line 1: "Ralph Loops test — design agent"
+- Line 1: "Ralph Loops Test 3 — design agent"
 - Line 2: The current date and time
 - Line 3: The hostname of this machine
 

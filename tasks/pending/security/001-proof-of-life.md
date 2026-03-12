@@ -1,7 +1,7 @@
 Create a file called `proof-of-life-security.txt` in the project root directory.
 
 The file should contain exactly:
-- Line 1: "Ralph Loops test — security agent"
+- Line 1: "Ralph Loops Test 3 — security agent"
 - Line 2: The current date and time
 - Line 3: The hostname of this machine
 
