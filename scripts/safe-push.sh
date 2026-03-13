@@ -10,7 +10,7 @@ MAX_RETRIES=5
 DELAY=5
 
 for attempt in $(seq 1 "$MAX_RETRIES"); do
-    if git push origin "$BRANCH" 2>&1; then
+    if git push --force-with-lease origin "$BRANCH" 2>&1; then
         echo "[safe-push] Push succeeded on attempt $attempt"
         exit 0
     fi
