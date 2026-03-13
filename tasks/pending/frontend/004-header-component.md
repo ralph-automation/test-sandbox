@@ -1,0 +1,14 @@
+Create `src/frontend/components/header.html` — a reusable nav header snippet:
+
+```html
+<header style="background: #161b22; padding: 12px 24px; border-bottom: 1px solid #30363d; display: flex; justify-content: space-between; align-items: center;">
+  <h1 style="margin: 0; font-size: 18px; color: #e6edf3;">Ralph Control Center</h1>
+  <nav>
+    <a href="#/status" style="color: #58a6ff; margin-left: 16px; text-decoration: none;">Status</a>
+    <a href="#/tasks" style="color: #58a6ff; margin-left: 16px; text-decoration: none;">Tasks</a>
+    <a href="#/agents" style="color: #58a6ff; margin-left: 16px; text-decoration: none;">Agents</a>
+  </nav>
+</header>
+```
+
+Create exactly this file. Do not modify any other files.
