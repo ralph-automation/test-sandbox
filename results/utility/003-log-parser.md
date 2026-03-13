@@ -1,0 +1,1 @@
+Created and committed `src/utility/log-parser.sh`. The script accepts an optional log file path (defaults to `logs/worker.log`), prints the summary header, counts all four line types, and shows the last 5 lines before exiting 0.
