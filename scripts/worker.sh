@@ -12,6 +12,7 @@ RESULTS_DIR="$PROJECT_DIR/results"
 SCRIPTS_DIR="$PROJECT_DIR/scripts"
 STOP_HOUR=6
 MAX_TASKS=10
+MAX_RETRIES=3
 TASK_TIMEOUT=30m
 
 # Load API key
@@ -65,7 +66,7 @@ execute_task() {
     if [[ -n "$CLAUDE_BIN" && -n "${ANTHROPIC_API_KEY:-}" ]]; then
         log "Running Claude on $task_name"
         local output
-        if output=$(timeout "$TASK_TIMEOUT" setsid "$CLAUDE_BIN" -p "$prompt" 2>&1); then
+        if output=$(timeout "$TASK_TIMEOUT" setsid "$CLAUDE_BIN" -p "$prompt" --dangerously-skip-permissions 2>&1); then
             echo "$output" > "$result_file"
             return 0
         fi
@@ -96,14 +97,46 @@ complete_task() {
     mv "$task_file" "$done_dir/$task_name"
 }
 
+get_retry_count() {
+    local task_name="$1"
+    local marker="$TASKS_DIR/.retries/$ROLE/$task_name"
+    if [[ -f "$marker" ]]; then cat "$marker"; else echo "0"; fi
+}
+
+increment_retry() {
+    local task_name="$1"
+    local marker_dir="$TASKS_DIR/.retries/$ROLE"
+    mkdir -p "$marker_dir"
+    local count
+    count=$(get_retry_count "$task_name")
+    echo "$((count + 1))" > "$marker_dir/$task_name"
+}
+
+clear_retry() {
+    local task_name="$1"
+    rm -f "$TASKS_DIR/.retries/$ROLE/$task_name"
+}
+
 fail_task() {
     local task_file="$1"
     local task_name
     task_name=$(basename "$task_file")
-    # Move back to pending so it can be retried
-    local pending_dir="$TASKS_DIR/pending/$ROLE"
-    mkdir -p "$pending_dir"
-    mv "$task_file" "$pending_dir/$task_name"
+    increment_retry "$task_name"
+    local retries
+    retries=$(get_retry_count "$task_name")
+
+    if (( retries >= MAX_RETRIES )); then
+        # Give up — move to failed/
+        local failed_dir="$TASKS_DIR/failed/$ROLE"
+        mkdir -p "$failed_dir"
+        mv "$task_file" "$failed_dir/$task_name"
+        log "GAVE UP on $task_name after $retries attempts (moved to failed/)"
+    else
+        # Move back to pending for retry
+        local pending_dir="$TASKS_DIR/pending/$ROLE"
+        mkdir -p "$pending_dir"
+        mv "$task_file" "$pending_dir/$task_name"
+    fi
 }
 
 push_results() {
@@ -169,12 +202,13 @@ while true; do
 
     if execute_task "$claimed"; then
         complete_task "$claimed"
+        clear_retry "$task_name"
         log "Completed: $task_name"
         tasks_done=$((tasks_done + 1))
         push_results
     else
         fail_task "$claimed"
-        log "Failed: $task_name (moved back to pending)"
+        log "Failed: $task_name (retry $(get_retry_count "$task_name")/$MAX_RETRIES)"
     fi
 done
 
