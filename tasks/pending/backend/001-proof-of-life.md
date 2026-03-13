@@ -1,7 +1,7 @@
-Create a file called `proof-of-life-design.txt` in the project root containing:
+Create a file called `proof-of-life-backend.txt` in the project root containing:
 
 ```
-design agent alive
+backend agent alive
 timestamp: <current date and time>
 hostname: <machine hostname>
 ```
